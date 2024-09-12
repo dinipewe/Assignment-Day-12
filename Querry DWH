@@ -72,19 +72,19 @@ where lower("month") = 'january'
 --dicing dm_top_sales_name by year
 SELECT *
 FROM dm_top_sales_name
-where year_sale = 2020
+where year_sale = 2020;
 
 
 --dicing dm_avg_daily_capacity by day
 SELECT *
 FROM dm_avg_daily_capacity
-where day_sale = 'Friday'
+where day_sale = 'Friday';
 
 
 -- Drilling down total order from year to month
 SELECT year, month, sum(number_order)
 FROM dm_top_product
-GROUP BY year, month
+GROUP BY year, month;
 
 -- Pivoting avg employee score
 SELECT employee_name,
