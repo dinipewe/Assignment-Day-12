@@ -1,0 +1,93 @@
+--create a view to analyze top sales name who get score over 98 performance 
+Create view dm_top_sales_name as
+SELECT 
+    extract(year from f.performance_date) year_sale,
+	extract(month from f.performance_date) month_sale,
+    concat(e.first_name,' ',e.last_name) employee_name,
+    f.performance_score score
+FROM 
+    fact_employee_performance f
+LEFT JOIN 
+    dim_employee e ON f.employee_id = e.employee_id
+LEFT JOIN 
+    dim_department d ON e.department_id = d.department_id
+LEFT JOIN 
+    dim_education ed ON e.education_id = ed.education_id
+group by 1,2,3,4
+order by 4 desc
+limit 10;
+	
+	
+	
+
+--create a view to analyze top 10 product highest sales over the year 
+
+Create view dm_top_product as
+SELECT 
+    dt.year,
+	dt.month,
+    dp.product_name,
+	count(distinct fs.sales_id) number_order,
+    sum(fs.quantity*fs.price) revenue
+FROM 
+    fact_sales fs
+LEFT JOIN 
+    dim_store ds ON fs.store_id = ds.store_id
+LEFT JOIN 
+    dim_sales_name dns ON fs.sales_name_id = dns.sales_name_id
+LEFT JOIN 
+    dim_time dt ON fs.time_id = dt.time_id
+LEFT JOIN 
+    dim_product dp ON fs.product_id = dp.product_id
+group by 1,2,3
+order by 4 desc
+limit 10;
+
+
+
+---create a view to analyze avg daily capacity sales
+Create view dm_avg_daily_capacity as
+SELECT 
+    distinct dt.day_of_week day_sale,
+    avg(fs.quantity*fs.price) avg_daily_capacity
+FROM 
+    fact_sales fs
+LEFT JOIN 
+    dim_store ds ON fs.store_id = ds.store_id
+LEFT JOIN 
+    dim_sales_name dns ON fs.sales_name_id = dns.sales_name_id
+LEFT JOIN 
+    dim_time dt ON fs.time_id = dt.time_id
+LEFT JOIN 
+    dim_product dp ON fs.product_id = dp.product_id
+group by 1
+order by 1;
+
+
+--dicing dm_top_product by month
+SELECT *
+FROM dm_top_product
+where lower("month") = 'january'
+
+--dicing dm_top_sales_name by year
+SELECT *
+FROM dm_top_sales_name
+where year_sale = 2020
+
+
+--dicing dm_avg_daily_capacity by day
+SELECT *
+FROM dm_avg_daily_capacity
+where day_sale = 'Friday'
+
+
+-- Drilling down total order from year to month
+SELECT year, month, sum(number_order)
+FROM dm_top_product
+GROUP BY year, month
+
+-- Pivoting avg employee score
+SELECT employee_name,
+       avg(score)
+FROM dm_top_sales_name
+group by 1;
